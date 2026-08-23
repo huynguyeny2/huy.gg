@@ -1,10 +1,10 @@
 /* eslint-disable no-undef */
-/* rcm-data.js — REAL aggregates from FinSum raw ledger, scaled 5x to career volume.
-   Source: FinSum (Raw Ledger 50)-49ec3723.xlsx — DOS Mar 2025 to Mar 2026.
-   50,000 raw rows, 34,244 raw charge lines, 14,281 raw unique claims.
-   All $ amounts and counts multiplied by 5 to project ~250,000-claim career volume.
-   Per-line ratios, denial rates, and shares preserved at real values.
-   Denial-by-payer view excludes contractual CARCs 45/59/253 (above-fee, MPRR, sequestration).
+/* rcm-data.js - every figure recomputed from the raw ledger over one window.
+   Source: 1 - FinSum (Raw Ledger 50).xlsx, enhanced variation v2 generator.
+   Window: DOS 2025-04-01 to 2026-03-31. All counts and dollars scaled 5x.
+   The ledger holds a 13th month, Mar 2025, deliberately excluded: the totals and the
+   monthly series have to cover the same period or the tiles disagree with the charts.
+   Denial views exclude CARC 45/59/253, which are contractual rather than workable.
 */
 
 window.RCM_DATA = {
@@ -142,605 +142,616 @@ window.RCM_DATA = {
     ]
   },
   "facVisits": {
-    "Clinic A": 14375,
-    "Clinic B": 13775,
-    "Hospital OP": 14295,
-    "ASC 1": 14785,
-    "Telehealth": 14175
+    "Clinic A": 13225,
+    "Clinic B": 12700,
+    "Hospital OP": 13110,
+    "ASC 1": 13765,
+    "Telehealth": 13015
   },
   "claimsPerFac": {
-    "Clinic A": 14375,
-    "Clinic B": 13775,
-    "Hospital OP": 14295,
-    "ASC 1": 14785,
-    "Telehealth": 14175
+    "Clinic A": 13225,
+    "Clinic B": 12700,
+    "Hospital OP": 13110,
+    "ASC 1": 13765,
+    "Telehealth": 13015
   },
-  "totalClaims": 71405,
+  "totalClaims": 65815,
   "facSvcMix": {
     "Clinic A": {
-      "Behavioral": 0.11400980109541654,
-      "Integrated": 0.0403574517151917,
-      "Medical": 0.8456327471893917
+      "Behavioral": 0.19380768085739802,
+      "Integrated": 0.07204525156296517,
+      "Medical": 0.7341470675796368
     },
     "Clinic B": {
-      "Behavioral": 0.1138701146047605,
-      "Integrated": 0.05362915074933882,
-      "Medical": 0.8325007346459007
+      "Behavioral": 0.19813309244203553,
+      "Integrated": 0.0966576332429991,
+      "Medical": 0.7052092743149654
     },
     "Hospital OP": {
-      "Behavioral": 0.10962294365992138,
-      "Integrated": 0.04920658028825157,
-      "Medical": 0.841170476051827
+      "Behavioral": 0.18500892325996432,
+      "Integrated": 0.0883402736466389,
+      "Medical": 0.7266508030933968
     },
     "ASC 1": {
-      "Behavioral": 0.10875922573457736,
-      "Integrated": 0.04497980782620805,
-      "Medical": 0.8462609664392146
+      "Behavioral": 0.1874113977884888,
+      "Integrated": 0.08052168982137795,
+      "Medical": 0.7320669123901332
     },
     "Telehealth": {
-      "Behavioral": 0.12542635658914728,
-      "Integrated": 0.052093023255813956,
-      "Medical": 0.8224806201550388
+      "Behavioral": 0.2,
+      "Integrated": 0.09061102831594635,
+      "Medical": 0.7093889716840537
     }
   },
   "writeOffByFacSvc": {
     "Clinic A": {
-      "Behavioral": 11107,
-      "Integrated": 2936,
-      "Medical": 67843
+      "Behavioral": 9764,
+      "Integrated": 2579,
+      "Medical": 63052
     },
     "Clinic B": {
-      "Behavioral": 10688,
-      "Integrated": 3368,
-      "Medical": 62735
+      "Behavioral": 10347,
+      "Integrated": 3198,
+      "Medical": 56303
     },
     "Hospital OP": {
-      "Behavioral": 7424,
-      "Integrated": 3302,
-      "Medical": 63490
+      "Behavioral": 7209,
+      "Integrated": 3147,
+      "Medical": 59035
     },
     "ASC 1": {
-      "Behavioral": 8730,
-      "Integrated": 3970,
-      "Medical": 68991
+      "Behavioral": 8592,
+      "Integrated": 3749,
+      "Medical": 63846
     },
     "Telehealth": {
-      "Behavioral": 8758,
-      "Integrated": 2371,
-      "Medical": 59520
+      "Behavioral": 6917,
+      "Integrated": 2349,
+      "Medical": 56262
     }
   },
   "payerMix": {
     "Aetna": {
-      "revenue": 2590939,
-      "billed": 4082788,
-      "claims": 23540,
-      "denialRate": 0.2855
+      "revenue": 2407469,
+      "billed": 3776981,
+      "lines": 21715,
+      "claims": 9045,
+      "denialRate": 0.2535
     },
     "Anthem/BCBS": {
-      "revenue": 2443769,
-      "billed": 3932021,
-      "claims": 22415,
-      "denialRate": 0.2902
+      "revenue": 2250025,
+      "billed": 3626282,
+      "lines": 20660,
+      "claims": 8530,
+      "denialRate": 0.2594
     },
     "Cigna": {
-      "revenue": 2368999,
-      "billed": 3988572,
-      "claims": 23140,
-      "denialRate": 0.2835
+      "revenue": 2186806,
+      "billed": 3678309,
+      "lines": 21370,
+      "claims": 8820,
+      "denialRate": 0.2567
     },
     "Medicaid": {
-      "revenue": 1714464,
-      "billed": 3981637,
-      "claims": 23245,
-      "denialRate": 0.293
+      "revenue": 1555244,
+      "billed": 3622112,
+      "lines": 21185,
+      "claims": 8875,
+      "denialRate": 0.265
     },
     "Medicare": {
-      "revenue": 1918560,
-      "billed": 3802845,
-      "claims": 22020,
-      "denialRate": 0.2841
+      "revenue": 1779973,
+      "billed": 3524573,
+      "lines": 20315,
+      "claims": 8420,
+      "denialRate": 0.2587
     },
     "Sedgwick": {
-      "revenue": 2527764,
-      "billed": 4004515,
-      "claims": 22580,
-      "denialRate": 0.2961
+      "revenue": 2312117,
+      "billed": 3664133,
+      "lines": 20730,
+      "claims": 8765,
+      "denialRate": 0.2634
     },
     "UHC": {
-      "revenue": 2396218,
-      "billed": 3921591,
-      "claims": 22460,
-      "denialRate": 0.2858
+      "revenue": 2212223,
+      "billed": 3618017,
+      "lines": 20770,
+      "claims": 8730,
+      "denialRate": 0.2576
     },
     "Self-Pay": {
-      "revenue": 980408,
-      "billed": 2077206,
-      "claims": 11820,
-      "denialRate": 1
+      "revenue": 908565,
+      "billed": 1925901,
+      "lines": 11005,
+      "claims": 4630,
+      "denialRate": 0.0
     }
   },
   "payerDenialsFiltered": [
     {
       "payer": "Medicaid",
-      "denials": 6140,
-      "lines": 23245,
-      "rate": 0.2641,
-      "deniedBilled": 1032759,
+      "denials": 5615,
+      "lines": 21185,
+      "rate": 0.265,
+      "deniedBilled": 945198,
       "deniedWriteoff": 980
     },
     {
-      "payer": "Aetna",
-      "denials": 6055,
-      "lines": 23540,
-      "rate": 0.2572,
-      "deniedBilled": 1036117,
-      "deniedWriteoff": 332
-    },
-    {
       "payer": "Sedgwick",
-      "denials": 5990,
-      "lines": 22580,
-      "rate": 0.2653,
-      "deniedBilled": 1053185,
-      "deniedWriteoff": 1611
-    },
-    {
-      "payer": "Cigna",
-      "denials": 5925,
-      "lines": 23140,
-      "rate": 0.2561,
-      "deniedBilled": 1057938,
-      "deniedWriteoff": 480
-    },
-    {
-      "payer": "UHC",
-      "denials": 5785,
-      "lines": 22460,
-      "rate": 0.2576,
-      "deniedBilled": 1019043,
-      "deniedWriteoff": 216
+      "denials": 5460,
+      "lines": 20730,
+      "rate": 0.2634,
+      "deniedBilled": 964116,
+      "deniedWriteoff": 1517
     },
     {
       "payer": "Anthem/BCBS",
-      "denials": 5775,
-      "lines": 22415,
-      "rate": 0.2576,
-      "deniedBilled": 970864,
+      "denials": 5360,
+      "lines": 20660,
+      "rate": 0.2594,
+      "deniedBilled": 897238,
       "deniedWriteoff": 300
     },
     {
       "payer": "Medicare",
-      "denials": 5660,
-      "lines": 22020,
-      "rate": 0.257,
-      "deniedBilled": 992163,
-      "deniedWriteoff": 1458
+      "denials": 5255,
+      "lines": 20315,
+      "rate": 0.2587,
+      "deniedBilled": 925241,
+      "deniedWriteoff": 1384
+    },
+    {
+      "payer": "UHC",
+      "denials": 5350,
+      "lines": 20770,
+      "rate": 0.2576,
+      "deniedBilled": 934032,
+      "deniedWriteoff": 191
+    },
+    {
+      "payer": "Cigna",
+      "denials": 5485,
+      "lines": 21370,
+      "rate": 0.2567,
+      "deniedBilled": 976032,
+      "deniedWriteoff": 384
+    },
+    {
+      "payer": "Aetna",
+      "denials": 5505,
+      "lines": 21715,
+      "rate": 0.2535,
+      "deniedBilled": 939384,
+      "deniedWriteoff": 254
     },
     {
       "payer": "Self-Pay",
       "denials": 0,
-      "lines": 11820,
-      "rate": 0,
+      "lines": 11005,
+      "rate": 0.0,
       "deniedBilled": 0,
       "deniedWriteoff": 0
     }
   ],
   "denials": {
-    "overallRate": 0.5121,
-    "issued": 57775,
-    "affected": 36570,
+    "overallRate": 0.4112,
+    "issued": 146745,
+    "affected": 27065,
+    "claimsAnyCarc": 61185,
     "distByCPT": [
       {
         "k": "99213",
-        "v": 0.268,
+        "v": 0.2353,
         "cpt": "99213",
         "desc": "Office/outpatient visit, established patient, low/moderate MDM"
       },
       {
         "k": "99214",
-        "v": 0.215,
+        "v": 0.198,
         "cpt": "99214",
         "desc": "Office/outpatient visit, established patient, moderate/high MDM"
       },
       {
         "k": "99203",
-        "v": 0.128,
+        "v": 0.1143,
         "cpt": "99203",
         "desc": "Office/outpatient visit, new patient, low/moderate MDM"
       },
       {
         "k": "99204",
-        "v": 0.089,
+        "v": 0.0831,
         "cpt": "99204",
         "desc": "Office/outpatient visit, new patient, moderate/high MDM"
       },
       {
         "k": "Other",
-        "v": 0.3
+        "v": 0.3693,
+        "cpt": "Other",
+        "desc": ""
       }
     ],
     "distByEncounter": [
       {
         "k": "Follow-up Medical",
-        "v": 0.421
+        "v": 0.4333
       },
       {
         "k": "New Medical",
-        "v": 0.188
+        "v": 0.1973
       },
       {
         "k": "Injection",
-        "v": 0.094
+        "v": 0.0935
       },
       {
-        "k": "Labs",
-        "v": 0.077
+        "k": "Follow-up Behavioral",
+        "v": 0.0763
       },
       {
         "k": "Other",
-        "v": 0.22
+        "v": 0.1996
       }
     ]
   },
   "scenarioDist": [
     {
       "k": "clean",
-      "lines": 113445,
-      "share": 0.6625686251606121,
-      "billed": 19746623
+      "lines": 104455,
+      "share": 0.6621553090332805,
+      "billed": 18191840
     },
     {
       "k": "self_pay",
-      "lines": 11820,
-      "share": 0.06903399135614999,
-      "billed": 2077206
+      "lines": 11005,
+      "share": 0.0697622820919176,
+      "billed": 1925901
     },
     {
       "k": "missing_info",
-      "lines": 7135,
-      "share": 0.04167153369933419,
-      "billed": 1174454
+      "lines": 6525,
+      "share": 0.041362916006339144,
+      "billed": 1080675
     },
     {
       "k": "medical_necessity",
-      "lines": 5295,
-      "share": 0.03092512556944282,
-      "billed": 934023
+      "lines": 4925,
+      "share": 0.0312202852614897,
+      "billed": 871491
     },
     {
       "k": "bundled",
-      "lines": 5115,
-      "share": 0.029873846513257796,
-      "billed": 874549
+      "lines": 4755,
+      "share": 0.030142630744849446,
+      "billed": 813521
     },
     {
       "k": "noncovered",
-      "lines": 5000,
-      "share": 0.029202196005139586,
-      "billed": 853217
+      "lines": 4570,
+      "share": 0.028969889064976228,
+      "billed": 761262
     },
     {
       "k": "benefit_maxed",
-      "lines": 4480,
-      "share": 0.02616516762060507,
-      "billed": 759248
+      "lines": 4140,
+      "share": 0.02624405705229794,
+      "billed": 710530
     },
     {
       "k": "no_auth",
-      "lines": 3425,
-      "share": 0.020003504263520617,
-      "billed": 618163
-    },
-    {
-      "k": "duplicate",
-      "lines": 2985,
-      "share": 0.017433711015068333,
-      "billed": 513368
+      "lines": 3120,
+      "share": 0.019778129952456418,
+      "billed": 562552
     },
     {
       "k": "not_billed_out",
-      "lines": 2965,
-      "share": 0.017316902231047773,
-      "billed": 497539
+      "lines": 2745,
+      "share": 0.01740095087163233,
+      "billed": 460690
     },
     {
       "k": "timely_filing",
-      "lines": 2950,
-      "share": 0.017229295643032355,
-      "billed": 530247
+      "lines": 2740,
+      "share": 0.017369255150554676,
+      "billed": 489542
     },
     {
-      "k": "modifier_error",
-      "lines": 1660,
-      "share": 0.009695129073706343,
-      "billed": 307741
-    },
-    {
-      "k": "experimental",
-      "lines": 1660,
-      "share": 0.009695129073706343,
-      "billed": 305267
+      "k": "duplicate",
+      "lines": 2730,
+      "share": 0.017305863708399365,
+      "billed": 473626
     },
     {
       "k": "level_of_service",
-      "lines": 1655,
-      "share": 0.009665926877701203,
-      "billed": 297517
+      "lines": 1540,
+      "share": 0.00976228209191759,
+      "billed": 278430
+    },
+    {
+      "k": "modifier_error",
+      "lines": 1515,
+      "share": 0.009603803486529318,
+      "billed": 276636
     },
     {
       "k": "units_excess",
-      "lines": 1630,
-      "share": 0.009519915897675505,
-      "billed": 302013
+      "lines": 1505,
+      "share": 0.00954041204437401,
+      "billed": 269107
+    },
+    {
+      "k": "experimental",
+      "lines": 1480,
+      "share": 0.009381933438985737,
+      "billed": 270504
     }
   ],
   "carcTop": [
     {
       "code": "16",
       "desc": "Claim/service lacks information needed for adjudication. Remark Code required when appropriate.",
-      "lines": 7135,
-      "billed": 1174454
+      "lines": 6525,
+      "billed": 1080675
     },
     {
       "code": "50",
       "desc": "Non-covered: not deemed a medical necessity by payer.",
-      "lines": 5295,
-      "billed": 934023
+      "lines": 4925,
+      "billed": 871491
     },
     {
       "code": "97",
       "desc": "Benefit included in payment/allowance for another service/procedure already adjudicated.",
-      "lines": 5115,
-      "billed": 874549
+      "lines": 4755,
+      "billed": 813521
     },
     {
       "code": "96",
       "desc": "Non-covered charge(s).",
-      "lines": 5000,
-      "billed": 853217
+      "lines": 4570,
+      "billed": 761262
     },
     {
       "code": "119",
       "desc": "Benefit maximum for this time period or occurrence has been reached.",
-      "lines": 4480,
-      "billed": 759248
-    },
-    {
-      "code": "18",
-      "desc": "Duplicate claim/service.",
-      "lines": 2985,
-      "billed": 513368
+      "lines": 4140,
+      "billed": 710530
     },
     {
       "code": "29",
       "desc": "Time limit for filing has expired.",
-      "lines": 2950,
-      "billed": 530247
+      "lines": 2740,
+      "billed": 489542
+    },
+    {
+      "code": "18",
+      "desc": "Duplicate claim/service.",
+      "lines": 2730,
+      "billed": 473626
     },
     {
       "code": "197",
       "desc": "Payment denied/reduced for absence of precertification/authorization.",
-      "lines": 2420,
-      "billed": 441364
-    },
-    {
-      "code": "55",
-      "desc": "Denied: experimental/investigational by payer.",
-      "lines": 1660,
-      "billed": 305267
+      "lines": 2235,
+      "billed": 406383
     },
     {
       "code": "150",
       "desc": "Info submitted does not support this level of service.",
-      "lines": 1655,
-      "billed": 297517
+      "lines": 1540,
+      "billed": 278430
+    },
+    {
+      "code": "151",
+      "desc": "Payer deems the info submitted does not support this many services.",
+      "lines": 1505,
+      "billed": 269107
     }
   ],
   "cptTop": [
     {
       "cpt": "99213",
       "desc": "Office/outpatient visit, established patient, low/moderate MDM",
-      "lines": 41120,
-      "billed": 8170544,
-      "payment": 4698980
+      "lines": 37870,
+      "billed": 7524769,
+      "payment": 4331831
     },
     {
       "cpt": "99214",
       "desc": "Office/outpatient visit, established patient, moderate/high MDM",
-      "lines": 32985,
-      "billed": 3108836,
-      "payment": 1770473
+      "lines": 30410,
+      "billed": 2866142,
+      "payment": 1626275
     },
     {
       "cpt": "99203",
       "desc": "Office/outpatient visit, new patient, low/moderate MDM",
-      "lines": 19550,
-      "billed": 2673463,
-      "payment": 1525949
+      "lines": 17955,
+      "billed": 2455346,
+      "payment": 1404677
     },
     {
       "cpt": "99204",
       "desc": "Office/outpatient visit, new patient, moderate/high MDM",
-      "lines": 13615,
-      "billed": 1742039,
-      "payment": 987605
+      "lines": 12525,
+      "billed": 1602574,
+      "payment": 909078
     },
     {
       "cpt": "90834",
       "desc": "Psychotherapy, 45 minutes with patient",
-      "lines": 12845,
-      "billed": 3030264,
-      "payment": 1741741
+      "lines": 11920,
+      "billed": 2812047,
+      "payment": 1619402
     },
     {
       "cpt": "96372",
       "desc": "Therapeutic/prophylactic/diagnostic injection; SC/IM",
-      "lines": 8550,
-      "billed": 714609,
-      "payment": 329266
+      "lines": 7795,
+      "billed": 651506,
+      "payment": 301252
     },
     {
       "cpt": "G2211",
       "desc": "Visit complexity add-on (primary care / longitudinal care)",
-      "lines": 8210,
-      "billed": 775927,
-      "payment": 431572
+      "lines": 7630,
+      "billed": 721111,
+      "payment": 399342
     },
     {
       "cpt": "90791",
       "desc": "Psychiatric diagnostic evaluation",
-      "lines": 6700,
-      "billed": 1254039,
-      "payment": 723988
-    },
-    {
-      "cpt": "83036",
-      "desc": "Hemoglobin A1c",
-      "lines": 5040,
-      "billed": 253058,
-      "payment": 145671
+      "lines": 6115,
+      "billed": 1144545,
+      "payment": 663275
     },
     {
       "cpt": "80053",
       "desc": "Comprehensive metabolic panel",
-      "lines": 4925,
-      "billed": 804844,
-      "payment": 470166
+      "lines": 4625,
+      "billed": 755818,
+      "payment": 442219
+    },
+    {
+      "cpt": "83036",
+      "desc": "Hemoglobin A1c",
+      "lines": 4620,
+      "billed": 231970,
+      "payment": 133432
     },
     {
       "cpt": "85025",
       "desc": "Complete blood count (CBC) with automated differential",
-      "lines": 3540,
-      "billed": 712000,
-      "payment": 407949
+      "lines": 3280,
+      "billed": 659706,
+      "payment": 379130
     },
     {
       "cpt": "93000",
       "desc": "Electrocardiogram, routine ECG with interpretation and report",
-      "lines": 3075,
-      "billed": 534681,
-      "payment": 300761
+      "lines": 2815,
+      "billed": 489472,
+      "payment": 276010
     }
   ],
   "encounterMix": [
     {
       "k": "Follow-up Medical",
-      "lines": 74105,
-      "billed": 11279380,
-      "share": 0.43280574699217383
+      "lines": 68280,
+      "billed": 10390911,
+      "share": 0.4328367670364501
     },
     {
       "k": "New Medical",
-      "lines": 33165,
-      "billed": 4415502,
-      "share": 0.19369816610209087
+      "lines": 30480,
+      "billed": 4057920,
+      "share": 0.19321711568938194
     },
     {
       "k": "Injection",
-      "lines": 16515,
-      "billed": 6460695,
-      "share": 0.09645485340497606
+      "lines": 15070,
+      "billed": 5918144,
+      "share": 0.09553090332805071
     },
     {
       "k": "Labs",
-      "lines": 13505,
-      "billed": 1769902,
-      "share": 0.07887513140988202
+      "lines": 12525,
+      "billed": 1647494,
+      "share": 0.07939778129952456
     },
     {
       "k": "Follow-up Behavioral",
-      "lines": 12845,
-      "billed": 3030264,
-      "share": 0.0750204415372036
+      "lines": 11920,
+      "billed": 2812047,
+      "share": 0.07556259904912836
     },
     {
       "k": "Integrated Visit",
-      "lines": 8210,
-      "billed": 775927,
-      "share": 0.0479500058404392
+      "lines": 7630,
+      "billed": 721111,
+      "share": 0.04836767036450079
     },
     {
       "k": "New Behavioral",
-      "lines": 6700,
-      "billed": 1254039,
-      "share": 0.039130942646887046
+      "lines": 6115,
+      "billed": 1144545,
+      "share": 0.038763866877971474
     },
     {
       "k": "Diagnostic",
-      "lines": 4510,
-      "billed": 705216,
-      "share": 0.026340380796635907
+      "lines": 4165,
+      "billed": 649906,
+      "share": 0.026402535657686212
     },
     {
       "k": "Ancillary",
-      "lines": 1665,
-      "billed": 100250,
-      "share": 0.009724331269711482
+      "lines": 1565,
+      "billed": 94229,
+      "share": 0.009920760697305863
     }
   ],
   "providerTier": [
     {
       "credential": "DO",
-      "lines": 34915,
-      "denials": 11855,
-      "denialRate": 0.33953888013747674,
-      "billed": 6002306,
-      "payment": 3400057
-    },
-    {
-      "credential": "DPT",
-      "lines": 34035,
-      "denials": 11335,
-      "denialRate": 0.333039518143088,
-      "billed": 6031023,
-      "payment": 3433367
-    },
-    {
-      "credential": "MD",
-      "lines": 34290,
-      "denials": 11580,
-      "denialRate": 0.33770778652668415,
-      "billed": 5997475,
-      "payment": 3413546
+      "lines": 32580,
+      "denials": 30310,
+      "denialRate": 0.9303253529772867,
+      "billed": 5594389,
+      "payment": 3170456
     },
     {
       "credential": "PA",
-      "lines": 34305,
-      "denials": 11690,
-      "denialRate": 0.34076665209153184,
-      "billed": 5995197,
-      "payment": 3417777
+      "lines": 31600,
+      "denials": 29405,
+      "denialRate": 0.9305379746835443,
+      "billed": 5509753,
+      "payment": 3140498
+    },
+    {
+      "credential": "MD",
+      "lines": 31320,
+      "denials": 29155,
+      "denialRate": 0.9308748403575989,
+      "billed": 5468477,
+      "payment": 3116989
+    },
+    {
+      "credential": "DPT",
+      "lines": 31290,
+      "denials": 29050,
+      "denialRate": 0.9284116331096197,
+      "billed": 5554039,
+      "payment": 3160851
     },
     {
       "credential": "NP",
-      "lines": 33675,
-      "denials": 11315,
-      "denialRate": 0.3360059391239792,
-      "billed": 5765174,
-      "payment": 3276372
+      "lines": 30960,
+      "denials": 28825,
+      "denialRate": 0.9310400516795866,
+      "billed": 5309649,
+      "payment": 3023628
     }
   ],
   "arAging": [
     {
       "bucket": "0-30",
-      "amount": 8251405
+      "amount": 8833
     },
     {
       "bucket": "31-60",
-      "amount": 336530
+      "amount": 63349
     },
     {
       "bucket": "61-90",
-      "amount": 310949
+      "amount": 52367
     },
     {
       "bucket": "91-120",
-      "amount": 338296
+      "amount": 65055
     },
     {
       "bucket": "120+",
-      "amount": 3227644
+      "amount": 549489
     }
   ],
   "incomeMonthly": [
@@ -785,62 +796,82 @@ window.RCM_DATA = {
     30346,
     32946
   ],
-  "kpis": {
-    "visits": 71405,
-    "income": 16941120,
-    "billed": 29791176,
-    "writeOff": 385231,
-    "openAR": 12464824,
-    "openARpct": 0.4184,
-    "denialRate": 0.5121,
-    "ncr": 0.5687,
-    "collectionRate": 0.7617,
-    "charges": 171220,
-    "rows": 250000,
-    "scaleFactor": 5,
-    "scaledLabel": "250,000+",
-    "avgArDays": 95,
-    "filteredDenialRate": 0.2414,
-    "filteredDenials": 41330
+  "svcLineTotals": {
+    "Behavioral": {
+      "billed": 3956592,
+      "payment": 2282677,
+      "lines": 18035,
+      "claims": 16315
+    },
+    "Integrated": {
+      "billed": 721111,
+      "payment": 399342,
+      "lines": 7630,
+      "claims": 7240
+    },
+    "Medical": {
+      "billed": 22758605,
+      "payment": 12930404,
+      "lines": 132085,
+      "claims": 61065
+    }
   },
   "svcLineAvgPerLine": {
-    "Medical": {
-      "billed": 172.38,
-      "payment": 97.89
+    "Behavioral": {
+      "billed": 219.38,
+      "payment": 126.57
     },
     "Integrated": {
       "billed": 94.51,
-      "payment": 52.57
+      "payment": 52.34
     },
-    "Behavioral": {
-      "billed": 219.2,
-      "payment": 126.16
+    "Medical": {
+      "billed": 172.3,
+      "payment": 97.89
     }
   },
-  "meta": {
-    "source": "FinSum (Raw Ledger 50)-49ec3723.xlsx",
-    "rawRows": 50000,
-    "rawChargeLines": 34244,
-    "rawUniqueClaims": 14281,
-    "dosRange": "2025-03-01 to 2026-03-31",
+  "kpis": {
+    "visits": 65815,
+    "income": 15612422,
+    "billed": 27436308,
+    "writeOff": 356350,
+    "openAR": 739093,
+    "openARpct": 0.3334,
+    "openClaims": 21940,
+    "denialRate": 0.2411,
+    "filteredDenialRate": 0.2411,
+    "filteredDenials": 38030,
+    "ncr": 0.7621,
+    "gcr": 0.569,
+    "collectionRate": 0.7621,
+    "allowable": 20486786,
+    "contractualAdj": 9116146,
+    "charges": 157750,
+    "rows": 157750,
     "scaleFactor": 5,
-    "scaledClaims": 71405,
-    "scaledChargeLines": 171220,
+    "scaledLabel": "157,750",
+    "avgArDays": 0
+  },
+  "meta": {
+    "source": "1 - FinSum (Raw Ledger 50).xlsx",
+    "generator": "0 - Data Creation - FinSum (Raw Ledger - Main Code) - Enhanced Variation v2.ipynb",
+    "dosRange": "2025-04-01 to 2026-03-31",
+    "monthsCovered": 12,
+    "scaleFactor": 5,
     "facilities": 5,
     "payers": 8,
-    "monthsCovered": 12,
     "excludedCarcCodes": [
+      "253",
       "45",
-      "59",
-      "253"
+      "59"
     ],
-    "excludedCarcReason": "Contractual write-offs (45 = above contracted fee, 59 = MPRR adjustment, 253 = sequestration) — not actionable denials.",
-    "note": "Aggregates parsed from raw ledger; all $ amounts and counts scaled 5x to project ~250K-claim career volume."
+    "excludedCarcReason": "Contractual adjustments (45 above contracted fee, 59 multiple-procedure reduction, 253 sequestration). These post automatically off the fee schedule and are not workable denials.",
+    "note": "Every figure recomputed from the raw ledger over one 12-month window, Apr 2025 through Mar 2026, and scaled 5x. The ledger itself carries a 13th month, Mar 2025, which is excluded here so the monthly series and the totals cover the same period."
   }
 };
 window.RCM_CONST = {
-  FACILITIES: ["Clinic A","Clinic B","Hospital OP","ASC 1","Telehealth"],
-  PAYERS: ["Aetna","Anthem/BCBS","Cigna","Medicaid","Medicare","Sedgwick","UHC","Self-Pay"],
-  SERVICE_LINES: ["Behavioral","Integrated","Medical"],
-  MONTHS: ["Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar"]
+  FACILITIES: ["Clinic A", "Clinic B", "Hospital OP", "ASC 1", "Telehealth"],
+  PAYERS: ["Aetna", "Anthem/BCBS", "Cigna", "Medicaid", "Medicare", "Sedgwick", "UHC", "Self-Pay"],
+  SERVICE_LINES: ["Behavioral", "Integrated", "Medical"],
+  MONTHS: ["Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar"]
 };

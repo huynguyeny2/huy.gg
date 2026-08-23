@@ -268,6 +268,42 @@ p + p{margin-top:12px}
 .platecap{font-family:var(--tech);font-size:10.5px;color:var(--sumi3);margin-top:11px;
           line-height:1.7;max-width:none}
 .platecap b{color:var(--sumi);font-weight:400}
+
+/* A code sample shown the way a plate shows an image: same rule, same white ground.
+   It scrolls in its own box so a long dictionary never sets the page height. */
+.codeplate{border:1px solid var(--rule);background:#fff;overflow:auto;
+  max-height:clamp(300px,46vh,460px);padding:14px 16px;display:block}
+.codeplate code{font-family:var(--tech);font-size:11.5px;line-height:1.66;
+  color:var(--sumi1);white-space:pre;display:block}
+
+/* The operational report, rendered from the same figures the dashboard reads rather than
+   screenshotted, so it cannot drift out of agreement with them. Months run across, which is
+   the source report's orientation, and that only fits because the money is abbreviated the
+   way the dashboard KPIs already abbreviate it: at full precision a row label plus thirteen
+   columns needs about 1,410px against an 800px measure. */
+.reporttable{border:1px solid var(--rule);background:var(--raise);overflow:hidden}
+table.rcmrep{width:100%;border-collapse:collapse}
+
+/* One ink for every figure. Weighting two of the five rows put the emphasis where a reader
+   had not asked for it; a report is a surface to read across, not an argument with a lead.
+   The hovered row lifts to white instead, so emphasis follows the reader. */
+table.rcmrep th[scope=row]{font-family:inherit;font-size:13.5px;font-weight:400;
+  color:var(--sumi1);text-align:left;padding:11px 16px;white-space:nowrap}
+table.rcmrep td{font-family:var(--tech);font-variant-numeric:tabular-nums;font-size:11.5px;
+  color:var(--sumi1);text-align:right;white-space:nowrap;padding:11px 7px}
+table.rcmrep thead th{font-family:var(--tech);font-size:11.5px;font-weight:400;color:var(--sumi2);
+  letter-spacing:.06em;text-transform:uppercase;text-align:right;white-space:nowrap;
+  padding:11px 7px;border-bottom:1px solid var(--rule)}
+table.rcmrep thead th .yr{opacity:.58;margin-left:3px}
+table.rcmrep .tot{padding-right:16px;border-left:1px solid var(--hair)}
+
+/* Hover lights the whole row, label and total included, so the eye can hold a month while
+   reading twelve columns of figures. */
+table.rcmrep tbody tr:hover th,table.rcmrep tbody tr:hover td{background:#fff;color:var(--sumi)}
+@media (max-width:720px){
+  .reporttable{overflow-x:auto}
+  table.rcmrep{min-width:660px}
+}
 /* No emphasis rule for lead paragraphs. Tried and removed on 2026-08-12: this
    design does emphasis by position and size, and it already runs four scanning
    layers, the margin notation, the titles, the railcard figures, and the

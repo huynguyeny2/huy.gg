@@ -49,14 +49,19 @@
     const writeOffRows = fac.map((f) => { const r = { label: f }; svc.forEach((s) => { r[s] = (D.writeOffByFacSvc[f] || {})[s] || 0; }); return r; }).filter((r) => svc.some((s) => r[s] > 0));
     const payerMix = {}; pay.forEach((p) => { const m = D.payerMix[p]; if (m) payerMix[p] = Object.assign({}, m, { revenue: Math.round(m.revenue * facShare * svcShare) }); });
     const arAging = D.arAging.map((a) => ({ bucket: a.bucket, amount: Math.round(a.amount * slice) }));
-    const perLine = D.svcLineAvgPerLine;
+    /* Billed and collected come from the ledger's own service-line totals, scaled by the share
+       of facilities and payers selected. They used to be claims multiplied by svcLineAvgPerLine,
+       which is an average per service LINE, not per claim: at 2.4 lines a claim that understated
+       the chart by 58%, and NCR hid it because both sides of the ratio were short by the same
+       factor. Claim counts here overlap across rows, since one claim can carry lines from more
+       than one service line, so they sum past the claim total on purpose. */
     const serviceLineRows = svc.map((s) => {
-      let lineVisits = 0, lineClaims = 0;
-      fac.forEach((f) => { const mix = (D.facSvcMix[f] || {})[s] || 0; lineVisits += Math.round((D.facVisits[f] || 0) * mix); lineClaims += Math.round((D.claimsPerFac[f] || 0) * mix); });
-      const claimsScaled = Math.round(lineClaims * payShare);
-      const revenue = Math.round(claimsScaled * perLine[s].payment);
-      const billedAmt = Math.round(claimsScaled * perLine[s].billed);
-      return { line: s, visits: lineVisits, revenue: revenue, billed: billedAmt, ncr: billedAmt > 0 ? revenue / billedAmt : 0 };
+      const T = (D.svcLineTotals || {})[s] || { billed: 0, payment: 0, claims: 0 };
+      const k = facShare * payShare;
+      const billedAmt = Math.round(T.billed * k);
+      const revenue = Math.round(T.payment * k);
+      return { line: s, visits: Math.round(T.claims * facShare), revenue: revenue, billed: billedAmt,
+               ncr: billedAmt > 0 ? revenue / billedAmt : 0 };
     });
     return { visits: totalVisits, income, billed, openARpct: D.kpis.openARpct, denialRate, incomeMonthly, billedMonthly, visitsDonut, denialsByPayer, denByPayTotal, writeOffRows, payerMix, payersFiltered: pay, arAging, serviceLineRows, denials: D.denials, slice };
   }
@@ -82,7 +87,11 @@
 
   function chartIB(income, billed, benchmark) {
     const W = 720, H = 240, pl = 8, pr = 8, pt = 16, pb = 26, cH = H - pt - pb, cW = W - pl - pr;
-    const gw = cW / 12, bw = Math.min(30, gw * 0.5);
+    /* Column width comes from the series length, not a hardcoded 12. The ledger runs 13 DOS
+       months, and dividing by 12 pushed the last column 36px past the viewBox where it clipped
+       against the panel edge. */
+    const nCol = Math.max(1, billed.length);
+    const gw = cW / nCol, bw = Math.min(30, gw * 0.5);
     const maxS = Math.max(Math.max.apply(null, billed), benchmark || 0) * 1.12 || 1;
     const benchY = benchmark ? pt + cH - (benchmark / maxS) * cH : -999;
     let bars = '', line = '', dots = '', labels = '', hits = '';
@@ -92,7 +101,12 @@
       const iy = pt + cH - (income[i] / maxS) * cH;
       line += (i === 0 ? 'M' : 'L') + cx.toFixed(1) + ' ' + iy.toFixed(1) + ' ';
       dots += '<circle data-ib-dot="' + i + '" cx="' + cx.toFixed(1) + '" cy="' + iy.toFixed(1) + '" r="3" style="fill:var(--income);transition:r .15s ease;"></circle>';
-      labels += '<text x="' + cx.toFixed(1) + '" y="' + (H - 8) + '" text-anchor="middle" style="fill:var(--muted2);font-family:\'IBM Plex Mono\',monospace;font-size:10px;">' + MON[i] + '</text>';
+      /* The ledger spans 13 DOS months, so March appears twice. Any month name that repeats
+         in the series carries its year; the rest stay bare, because tagging all thirteen
+         would be noise to remove an ambiguity that only two of them have. */
+      const dup = MON.filter((m) => m === MON[i]).length > 1;
+      const yr = dup && D.monthLabels && D.monthLabels[i] ? D.monthLabels[i].slice(2, 4) : '';
+      labels += '<text x="' + cx.toFixed(1) + '" y="' + (H - 8) + '" text-anchor="middle" style="fill:var(--muted2);font-family:\'IBM Plex Mono\',monospace;font-size:10px;">' + MON[i] + (yr ? '<tspan style="opacity:.7"> ' + yr + '</tspan>' : '') + '</text>';
       /* One full-height target per column, so the whole month is hoverable rather
          than just the bar. Painted transparent because pointer-events need a fill.
          The income value sits above its dot unless that lands it on the prior-year
@@ -151,20 +165,76 @@
       '<div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);">' + dot(it.color) + it.k + '<span style="margin-left:auto;color:var(--text);font-family:\'IBM Plex Mono\',monospace;">' + it.val + '</span></div>').join('') + '</div>';
   }
 
-  function nestedRing(overall, byCPT, byEnc) {
+
+  /* Denial families. A list of CARC codes is a lookup table; grouped, it answers the question a
+     manager actually asks, which is whether the denial was preventable before submission or was
+     the payer's own coverage call. The mapping is domain knowledge rather than anything the
+     ledger carries, so it lives next to the render instead of in the data file. */
+  const CARC_FAM = {
+    '16': 'Documentation', '150': 'Documentation', '226': 'Documentation',
+    '18': 'Timing and duplicates', '29': 'Timing and duplicates',
+    '197': 'Authorization', '210': 'Authorization', '15': 'Authorization',
+    '50': 'Medical necessity', '55': 'Medical necessity', '56': 'Medical necessity',
+    '96': 'Non-covered', '204': 'Non-covered', '167': 'Non-covered',
+    '119': 'Benefit limit', '222': 'Benefit limit',
+    '97': 'Bundling', '234': 'Bundling', '236': 'Bundling'
+  };
+  /* Front-end failures are the ones a process change prevents. The rest are the payer exercising
+     its own policy, which is worked by appeal rather than by fixing intake. */
+  const FAM_FRONT = ['Documentation', 'Timing and duplicates', 'Authorization'];
+  const FAM_ORDER = ['Documentation', 'Timing and duplicates', 'Authorization',
+                     'Medical necessity', 'Non-covered', 'Benefit limit', 'Bundling'];
+  /* No bespoke palette: this uses rampAt, the same ser1-to-ser5 ramp the payer donut runs, so
+     two seven-slice donuts on one page cannot encode the same position two different ways.
+     Slices sort by volume descending, which is what makes the ramp mean something: darker is
+     always the larger share, on this donut and on the payer one. FAM_ORDER only settles which
+     families exist, not what order they draw in. */
+  const MONO = "font-family:'IBM Plex Mono',monospace;";
+
+  function denialFamilies(top) {
+    const acc = {};
+    (top || []).forEach((c) => {
+      const n = CARC_FAM[String(c.code)];
+      if (!n) return;
+      if (!acc[n]) acc[n] = { n: n, lines: 0, billed: 0, codes: [] };
+      acc[n].lines += c.lines; acc[n].billed += c.billed; acc[n].codes.push(c.code);
+    });
+    return FAM_ORDER.filter((n) => acc[n]).map((n) => acc[n]).sort((x, y) => y.lines - x.lines);
+  }
+
+  function nestedRing(overall, byCPT, byEnc, byFam) {
     /* Three concentric data rings drawn as real <path> wedges, not dashed circle
        strokes, because each segment needs its own hover target to drive the
        center readout. Geometry and radii restored from the original React
        DenialNestedRing; palette is the current ink theme. */
-    const W = 460, cx = 230, cy = 230;
+    /* 560 rather than 520: the family ring is a fourth band outside the encounter ring, and the
+       labels now sit in the clear space above each ring, so the outermost one needs margin that
+       a 520 box does not have. Rendered size is unchanged, since the svg is capped by max-width
+       rather than by the viewBox. */
+    const W = 560, cx = 280, cy = 280;
     const encPal = ['var(--ser1)', 'var(--ser2)', 'var(--ser4)', 'var(--ser5)', 'var(--ser-rest)'];
     const cptPal = ['var(--ser1)', 'var(--ser2)', 'var(--ser4)', 'var(--ser5)', 'var(--ser-rest)'];
     const ovrPal = ['var(--ser1)', 'var(--ser-rest)'];
-    const rings = [
-      { key: 'enc', data: byEnc, R: 200, r: 158, pal: null, ring: 'By encounter', sub: 'encounter type' },
-      { key: 'cpt', data: byCPT, R: 152, r: 110, pal: null, ring: 'By CPT', sub: 'CPT code share' },
-      { key: 'ovr', data: [{ k: 'Denial rate', v: overall }, { k: 'Clean', v: Math.max(0, 1 - overall) }], R: 100, r: 64, pal: ovrPal, ring: '', sub: 'overall rate' }
-    ];
+    /* 28px bands with 20px gaps, holding the same 246 outer edge. Four 42px bands left the
+       centre hole at 62, which is too small to hold a readout at a size worth reading. Thinning
+       the bands buys that back: the hole goes to 74 without the chart shrinking. */
+    const rings = [];
+    if (byFam && byFam.length) {
+      /* An Other slice for the actionable lines outside the ten codes drawn. Without it the ring
+         normalises seven families to 100% and every slice reads about 6.8% high, which is the
+         same trap the encounter and CPT rings already avoid by carrying their own Other. */
+      const famData = byFam.map((f) => ({ k: f.n, v: f.lines }));
+      const famDrawn = famData.reduce((a, x) => a + x.v, 0);
+      const famRest = Math.max(0, (D.kpis.filteredDenials || 0) - famDrawn);
+      if (famRest > 0) famData.push({ k: 'Other codes', v: famRest });
+      rings.push({ key: 'fam', data: famData, R: 246, r: 218,
+                   pal: null, ring: 'By denial code', sub: 'denial code' });
+    }
+    rings.push(
+      { key: 'enc', data: byEnc, R: 198, r: 170, pal: null, ring: 'By encounter', sub: 'encounter type' },
+      { key: 'cpt', data: byCPT, R: 150, r: 122, pal: null, ring: 'By CPT', sub: 'CPT code share' },
+      { key: 'ovr', data: [{ k: 'Denial rate', v: overall }, { k: 'Clean', v: Math.max(0, 1 - overall) }], R: 102, r: 74, pal: ovrPal, ring: '', sub: 'overall rate' }
+    );
     function arcPath(R, r, a0, a1) {
       const large = (a1 - a0) > Math.PI ? 1 : 0;
       const x1 = cx + Math.cos(a0) * R, y1 = cy + Math.sin(a0) * R;
@@ -175,7 +245,7 @@
              ' L' + x3.toFixed(2) + ',' + y3.toFixed(2) + ' A' + r + ',' + r + ' 0 ' + large + ' 0 ' + x4.toFixed(2) + ',' + y4.toFixed(2) + ' Z';
     }
     let paths = '', ringLabels = '';
-    rings.forEach((ring) => {
+    rings.forEach((ring, ri) => {
       const sum = (ring.data || []).reduce((a, d) => a + d.v, 0) || 1;
       let acc = 0;
       (ring.data || []).forEach((d, i) => {
@@ -187,21 +257,29 @@
           '" data-val="' + d.v.toFixed(5) + '" data-sub="' + ring.sub + '" style="fill:' + (ring.pal ? ring.pal[i % ring.pal.length] : rampAt(i, ring.data.length)) + ';cursor:pointer;transition:opacity .2s ease;"></path>';
       });
       if (ring.ring) {
-        /* One centered element in --muted2, the same value the center caption
-           uses. A mid ink is the only fill that survives the 12 o'clock seam:
-           it never drops below 2.25:1 on any of the four grounds the label can
-           cross, where full ink hits 1.00:1 on the black wedge and washi hits
-           1.08:1 on the pale tail. Soft everywhere beats crisp then invisible. */
-        const ly = cy - (ring.R + ring.r) / 2 + 4;
-        ringLabels += '<text x="' + cx + '" y="' + ly + '" text-anchor="middle" style="pointer-events:none;fill:var(--on-series);font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;">' + ring.ring + '</text>';
+        /* Above the ring, in the gap, never on it. Printed across the band the label had to be
+           washi to clear the ink wedges, which meant it vanished the moment hover dimmed a slice
+           to .32; a dimmed wedge is exactly the pale ground washi is weakest on. In the gap it
+           sits on the card ground instead, so it can take a mid ink that holds at every state,
+           and it curves along the band it names rather than cutting across as a flat line. */
+        const lr = ri === 0 ? ring.R + 15 : (rings[ri - 1].r + ring.R) / 2;
+        const pid = 'nrlab-' + ring.key;
+        const A0 = -Math.PI / 2 - 1.05, A1 = -Math.PI / 2 + 1.05;
+        const px = (a) => (cx + Math.cos(a) * lr).toFixed(2) + ',' + (cy + Math.sin(a) * lr).toFixed(2);
+        ringLabels += '<path id="' + pid + '" d="M' + px(A0) + ' A' + lr + ',' + lr + ' 0 0 1 ' + px(A1) + '" fill="none" stroke="none"></path>' +
+          '<text dy="3.5" style="pointer-events:none;fill:var(--muted);' + MONO + 'font-size:10.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;">' +
+          '<textPath href="#' + pid + '" startOffset="50%" text-anchor="middle">' + ring.ring + '</textPath></text>';
       }
     });
+    /* The figure itself is centred on the rings, not the figure-plus-caption block. Centring the
+       block put the number 10px high, because the caption below it dragged the optical middle
+       down. The caption and the hover sub-line hang beneath instead. */
     const center =
-      '<text data-nr="num" x="' + cx + '" y="' + (cy - 4) + '" text-anchor="middle" style="pointer-events:none;fill:var(--text);font-size:44px;font-weight:700;letter-spacing:-.02em;">' + fmtPct(overall, 1) + '</text>' +
-      '<text data-nr="label" x="' + cx + '" y="' + (cy + 22) + '" text-anchor="middle" style="pointer-events:none;fill:var(--muted2);font-family:\'IBM Plex Mono\',monospace;font-size:10.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;">claims with denial codes</text>' +
-      '<text data-nr="sub" x="' + cx + '" y="' + (cy + 40) + '" text-anchor="middle" style="pointer-events:none;fill:var(--muted2);font-family:\'IBM Plex Mono\',monospace;font-size:10px;"></text>';
-    return '<div class="nr-wrap" data-nr-default="' + fmtPct(overall, 1) + '" style="flex:1 1 340px;display:flex;justify-content:center;min-width:280px;">' +
-      '<svg viewBox="0 0 ' + W + ' ' + W + '" role="img" aria-label="Denial breakdown by encounter, CPT, and overall rate" style="width:100%;max-width:540px;height:auto;display:block;">' +
+      '<text data-nr="num" x="' + cx + '" y="' + (cy + 14) + '" text-anchor="middle" style="pointer-events:none;fill:var(--text);font-size:40px;font-weight:700;letter-spacing:-.02em;">' + fmtPct(overall, 1) + '</text>' +
+      '<text data-nr="label" x="' + cx + '" y="' + (cy + 26) + '" text-anchor="middle" style="pointer-events:none;fill:var(--muted2);font-family:\'IBM Plex Mono\',monospace;font-size:9.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;">claims with a denial</text>' +
+      '<text data-nr="sub" x="' + cx + '" y="' + (cy + 44) + '" text-anchor="middle" style="pointer-events:none;fill:var(--muted2);font-family:\'IBM Plex Mono\',monospace;font-size:9.5px;"></text>';
+    return '<div class="nr-wrap" data-nr-default="' + fmtPct(overall, 1) + '" style="flex:1 1 420px;display:flex;justify-content:center;min-width:300px;">' +
+      '<svg viewBox="0 0 ' + W + ' ' + W + '" role="img" aria-label="Denial breakdown by denial code, encounter, CPT, and overall rate" style="width:100%;max-width:620px;height:auto;display:block;">' +
       paths + ringLabels + center + '</svg></div>';
   }
 
@@ -352,7 +430,12 @@
       const m = SCEN[S.scenario];
       const kIncome = Math.round(f.income * m.income);
       const kAR = Math.min(0.85, f.openARpct * m.ar);
+      /* Two denial rates, because they answer different questions and a single figure served
+         both wrongly. The tile carries the line rate, which is the denominator a revenue cycle
+         reader assumes and benchmarks against. The ring centre carries the claim rate, which is
+         higher by construction and only means anything next to its own caption. */
       const kDen = Math.min(0.95, f.denials.overallRate * m.denialRate);
+      const kDenLine = Math.min(0.95, (D.kpis.filteredDenialRate || 0) * m.denialRate);
       const incAdj = f.incomeMonthly.map((v) => Math.round(v * m.income));
       const arAdj = f.arAging.map((a) => ({ bucket: a.bucket, amount: Math.round(a.amount * m.ar) }));
       const st = S.scenario === 'stressed';
@@ -362,7 +445,7 @@
         kpiTile('Income', fmtM(kIncome), 'accent', st ? -8.4 : 5.1) +
         kpiTile('Billed', fmtM(f.billed), '', 2.4) +
         kpiTile('Open A/R', fmtPct(kAR, 1), '', st ? 6.2 : -1.4, true) +
-        kpiTile('Denial rate', fmtPct(kDen, 1), '', st ? 4.5 : -0.8, true) + '</div>';
+        kpiTile('Denial rate', fmtPct(kDenLine, 1), '', st ? 4.5 : -0.8, true) + '</div>';
 
       const ibMeta = dot('var(--billed)') + 'Billed' + '<span style="margin:0 6px;">' + dot('var(--income)', true) + 'Income</span>' + '<span style="display:inline-flex;align-items:center;gap:6px;"><span style="width:15px;border-top:1.5px dashed var(--muted);display:inline-block;"></span>Prior-yr avg</span>';
       const cIB = card('Revenue trend', 'Income vs Billed, monthly', ibMeta, chartIB(incAdj, f.billedMonthly, 1320000));
@@ -381,18 +464,61 @@
       const cDist = card('Distribution', 'Volume &amp; denials by counterparty', 'Excludes contractual CARCs (45, 59, 253)', dist);
 
       const woMeta = S.svc.map((s) => dot(PAL_SVC[s]) + s).join(' ');
-      const cWO = card('Operational losses', 'Average write-off by facility &amp; service line', woMeta, f.writeOffRows.length ? stackedWriteoff(f.writeOffRows, S.svc) : '<div style="color:var(--muted);font-size:14px;">No facilities match.</div>');
+      const cWO = card('Operational losses', 'Total write-off by facility &amp; service line', woMeta, f.writeOffRows.length ? stackedWriteoff(f.writeOffRows, S.svc) : '<div style="color:var(--muted);font-size:14px;">No facilities match.</div>');
 
-      const denRingBody = '<div style="display:flex;flex-wrap:wrap;gap:24px;align-items:center;justify-content:center;">' + nestedRing(kDen, f.denials.distByCPT, f.denials.distByEncounter) +
-        '<div style="display:flex;gap:28px;">' +
-        '<div><div style="font-size:26px;font-weight:600;color:var(--flare);letter-spacing:-.01em;">' + fmtN(f.denials.issued) + '</div><div style="font-family:\'IBM Plex Mono\',monospace;font-size:10.5px;color:var(--muted2);">DENIALS ISSUED</div></div>' +
-        '<div><div style="font-size:26px;font-weight:600;letter-spacing:-.01em;">' + fmtN(f.denials.affected) + '</div><div style="font-family:\'IBM Plex Mono\',monospace;font-size:10.5px;color:var(--muted2);">CLAIMS AFFECTED</div></div>' +
-        '</div></div>';
-      const cDen = card('Quality', 'Denial summary', 'Outer: encounter, middle: CPT, center: overall', denRingBody);
+      const fams = denialFamilies(D.carcTop);
+      const famTot = fams.reduce((a, x) => a + x.lines, 0);
+      const famPrev = fams.filter((x) => FAM_FRONT.indexOf(x.n) >= 0).reduce((a, x) => a + x.lines, 0);
+      /* Stats and the finding sit in a column beside the chart rather than under it. Stacked,
+         they capped how tall the rings could draw; alongside, the ring takes the full height of
+         the card and the prose gets a narrow measure, which is the width it wants anyway.
+
+         Three tiles, not two. Issued counts every denial line; actionable is what is left once
+         the contractual codes come out; the ten codes the ring draws carry most but not all of
+         that. Without the middle figure a reader has to get from 57,775 to 38,695 unaided, and
+         the two numbers do not reconcile on their own. */
+      const actionable = D.kpis.filteredDenials || 0;
+      const REASONS = ['missing documentation', 'a missed authorization', 'a claim filed late', 'a duplicate'];
+      const famFinding = fams.length
+        ? '<div><p style="margin:0 0 10px;font-size:13.5px;line-height:1.6;color:var(--muted);">' +
+          'The ten most common actionable codes carry ' + fmtN(Math.round(famTot * (f.slice || 1))) +
+          ' of the ' + fmtN(Math.round(actionable * (f.slice || 1))) + ' actionable lines, ' +
+          Math.round(100 * famTot / actionable) + '%. <b style="color:var(--strong);">' +
+          fmtN(Math.round(famPrev * (f.slice || 1))) + ' of those, ' +
+          Math.round(100 * famPrev / famTot) + '%, are front-end failures.</b> ' +
+          'None are the payer&rsquo;s judgment call, and all four are fixed by process rather than by appeal. ' +
+          'These include:</p>' +
+          '<ul style="margin:0;padding:0;list-style:none;">' +
+          REASONS.map((x) => '<li style="position:relative;padding:3px 0 3px 16px;font-size:13.5px;' +
+            'line-height:1.55;color:var(--muted);">' +
+            '<span style="position:absolute;left:0;top:11px;width:5px;height:5px;border-radius:50%;' +
+            'background:var(--muted2);"></span>' + x + '</li>').join('') +
+          '</ul></div>'
+        : '';
+      const statTile = (v, k, sub, accent) =>
+        '<div><div style="font-size:24px;font-weight:600;letter-spacing:-.01em;' + (accent ? 'color:var(--flare);' : '') + '">' + v + '</div>' +
+        '<div style="' + MONO + 'font-size:10.5px;color:var(--muted2);">' + k + '</div>' +
+        (sub ? '<div style="' + MONO + 'font-size:10px;color:var(--muted);margin-top:3px;">' + sub + '</div>' : '') + '</div>';
+      const denRingBody = '<div style="display:flex;flex-wrap:wrap;gap:clamp(18px,3vw,44px);align-items:center;">' +
+        nestedRing(kDen, f.denials.distByCPT, f.denials.distByEncounter, fams) +
+        '<div style="flex:1 1 250px;min-width:230px;display:flex;flex-direction:column;gap:20px;">' +
+        '<div style="display:flex;gap:24px;flex-wrap:wrap;">' +
+        statTile(fmtN(f.denials.issued), 'DENIALS ISSUED', 'all CARCs', true) +
+        statTile(fmtN(actionable), 'ACTIONABLE', 'excl. 45, 59, 253', false) +
+        statTile(fmtN(f.denials.affected), 'CLAIMS AFFECTED', '', false) +
+        '</div>' + famFinding + '</div></div>';
+      const cDen = card('Quality', 'Denial summary', 'Outer: denial code, then encounter, then CPT, center: overall rate', denRingBody);
 
       const cPay = card('Payer performance', 'Revenue by payer', 'Hover a bar for detail', f.payersFiltered.length ? payerBars(f.payersFiltered, f.payerMix) : '<div style="color:var(--muted);font-size:14px;">No payers selected.</div>');
 
-      const arFoot = '<p style="margin-top:12px;font-size:13px;color:var(--muted);">' + fmtPct(arAdj[arAdj.length - 1].amount / (arAdj.reduce((a, b) => a + b.amount, 0) || 1), 0) + ' of A/R is over 90 days; escalation candidate.</p>';
+      /* Over 90 days is 91-120 plus 120+, not the last bucket alone. Printing only 120+ under a
+         label that says "over 90 days" understated it by 2.7 points. Buckets are matched by name
+         so a change to the bucketing cannot silently re-break this. */
+      const arOver90 = arAdj.filter((a) => a.bucket === '91-120' || a.bucket === '120+')
+        .reduce((a, b) => a + b.amount, 0);
+      const arAll = arAdj.reduce((a, b) => a + b.amount, 0) || 1;
+      const arFoot = '<p style="margin-top:12px;font-size:13px;color:var(--muted);">' +
+        fmtPct(arOver90 / arAll, 0) + ' of A/R is over 90 days; escalation candidate.</p>';
       const cAR = card('Cash flow risk', 'A/R aging buckets', '', arBars(arAdj) + arFoot);
 
       chartsEl.innerHTML = kpiRow + cIB + cSvc + cDist + cWO + cDen + cPay + cAR;
@@ -422,7 +548,7 @@
       const wrap = svg.parentNode;
       const n = nrText(svg, 'num'), l = nrText(svg, 'label'), b = nrText(svg, 'sub');
       if (n && wrap) n.textContent = wrap.getAttribute('data-nr-default') || '';
-      if (l) l.textContent = 'claims with denial codes';
+      if (l) l.textContent = 'claims with a denial';
       if (b) b.textContent = '';
     }
     root.addEventListener('mouseover', function (ev) {
@@ -436,7 +562,7 @@
       if (n) n.textContent = p.getAttribute('data-ring') === 'ovr'
         ? fmtPct(parseFloat(p.getAttribute('data-val')), 1)
         : fmtPct(parseFloat(p.getAttribute('data-pct')), 0);
-      if (l) { const k = p.getAttribute('data-k') || ''; l.textContent = k.length > 22 ? k.slice(0, 22) + '\u2026' : k; }
+      if (l) { const k = p.getAttribute('data-k') || ''; l.textContent = k.length > 20 ? k.slice(0, 20) + '\u2026' : k; }
       if (b) b.textContent = p.getAttribute('data-sub') || '';
     });
     root.addEventListener('mouseout', function (ev) {

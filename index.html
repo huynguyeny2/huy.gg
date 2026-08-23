@@ -16,7 +16,7 @@
 <meta property="og:description" content="Ten years in healthcare operations and a technical background in data. The projects here are deployed and reachable.">
 <meta property="og:image" content="https://huy.gg/img/logo.png">
 <meta name="twitter:card" content="summary">
-<link rel="stylesheet" href="css/ink.css?v=20260822">
+<link rel="stylesheet" href="css/ink.css?v=20260822g">
 </head>
 <body>
 <div class="page">
@@ -33,7 +33,7 @@
   </header>
 
   <section class="alcove">
-    <div class="mk"><span class="vert">seven titles, one recurring job</span></div>
+    <div class="mk"><span class="vert">six titles, one recurring job</span></div>
     <div class="bd">
     <h1>The report did not exist, so I built it.</h1>
     <aside class="railcard">
@@ -49,18 +49,36 @@
   <section class="band wide">
     <div class="mk"></div>
     <div class="bd">
-    <p style="margin-bottom:clamp(26px,4vw,46px);font-size:clamp(16px,1.7vw,18.5px);line-height:1.6;color:var(--sumi1)">Seven roles in healthcare operations, and underneath every title the same job kept appearing: the reporting the place ran on had not been built yet. Everything linked here is deployed and reachable, and every figure names where it came from.</p>
+    <p style="margin-bottom:clamp(26px,4vw,46px);font-size:clamp(16px,1.7vw,18.5px);line-height:1.6;color:var(--sumi1)">Six roles in healthcare operations, and underneath every title the same job kept appearing: the reporting the place ran on had not been built yet. Everything linked here is deployed and reachable, and every figure names where it came from.</p>
   </div>
   </section>
 
   <section class="band">
     <div class="mk"><span>revenue cycle by design</span><span class="split">report summary</span></div>
     <div class="bd">
-    <div class="plate">
-      <img src="img/rcm-report-summary.png" width="2706" height="1173" loading="lazy" decoding="async" alt="Revenue cycle report summary: collection rates, denial volume, and reimbursement by payer">
-    </div>
-    <div class="platecap"><b>Five facilities modeled across twelve months.</b> Net collection holds at 82 to 83 percent against a 29 percent contractual adjustment and a 1 percent write-off rate, and a denial traces back to payer, provider, and CPT. The interface is live, not a screenshot.</div>
-    <a class="goto" href="dashboard.html">rcm dashboard</a>
+    <div class="reporttable"><table class="rcmrep rcmwide">
+        <thead><tr><th></th>
+        <th>Apr</th>
+        <th>May</th>
+        <th>Jun</th>
+        <th>Jul</th>
+        <th>Aug</th>
+        <th>Sep</th>
+        <th>Oct</th>
+        <th>Nov</th>
+        <th>Dec</th>
+        <th>Jan</th>
+        <th>Feb</th>
+        <th>Mar</th>
+        <th class="tot">Total</th></tr></thead><tbody>
+        <tr><th scope="row">Claims</th><td>5,435</td><td>5,520</td><td>5,590</td><td>5,390</td><td>5,505</td><td>5,635</td><td>5,655</td><td>5,330</td><td>5,655</td><td>5,680</td><td>5,100</td><td>5,320</td><td class="tot">65,815</td></tr>
+        <tr><th scope="row">Billed</th><td>$2.26M</td><td>$2.20M</td><td>$2.22M</td><td>$2.40M</td><td>$2.30M</td><td>$2.31M</td><td>$2.34M</td><td>$2.35M</td><td>$2.47M</td><td>$2.29M</td><td>$2.06M</td><td>$2.23M</td><td class="tot">$27.44M</td></tr>
+        <tr><th scope="row">Collected</th><td>$1.29M</td><td>$1.28M</td><td>$1.25M</td><td>$1.38M</td><td>$1.30M</td><td>$1.32M</td><td>$1.33M</td><td>$1.32M</td><td>$1.40M</td><td>$1.28M</td><td>$1.19M</td><td>$1.25M</td><td class="tot">$15.61M</td></tr>
+        <tr><th scope="row">Write-off</th><td>$30K</td><td>$27K</td><td>$27K</td><td>$20K</td><td>$29K</td><td>$31K</td><td>$32K</td><td>$34K</td><td>$29K</td><td>$32K</td><td>$30K</td><td>$33K</td><td class="tot">$356K</td></tr>
+        <tr><th scope="row">Collected %</th><td>57%</td><td>58%</td><td>57%</td><td>57%</td><td>57%</td><td>57%</td><td>57%</td><td>56%</td><td>57%</td><td>56%</td><td>58%</td><td>56%</td><td class="tot">56.9%</td></tr>
+        </tbody></table></div>
+    <div class="platecap"><b>Five facilities across twelve months.</b> Rendered from the same figures the case study reads, not screenshotted. Collected runs at 56.9 percent of billed once the contractual write-down comes out, and a denial traces back to payer, provider, and CPT.</div>
+    <a class="goto" href="dashboard.html">rcm case study</a>
   </div>
   </section>
 
@@ -80,7 +98,7 @@
       </div>
       <div>
         <h2>Claude Code analytics</h2>
-        <p>An analytics console over my own session history: what each session cost, which models held their reliability and at what price, when the output happens across weekday and hour, and which skills it is attributable to. Every figure is computed from the raw logs.</p>
+        <p>An analytics console over my own session history: what each session cost, which model is reliable and at what price, when the output happens (across weekday and hour), and which skills it is attributable to.</p>
         <a class="u" href="claude-analytics.html">huy.gg/claude-analytics</a>
       </div>
       <div>
